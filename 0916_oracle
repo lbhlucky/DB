@@ -1,0 +1,95 @@
+SELECT tablespace_name,status,contents,logging,extent_management,allocation_type,segment_space_management
+FROM DBA_TABLESPACES ;
+
+SELECT ts#,name FROM v$tablespace;
+
+-- T/S 생성
+CREATE tablespace inventory
+datafile '/u01/app/oracle/oradata/ORCL/datafile/inventory01.dbf' SIZE 100M
+autoextend ON NEXT 10M maxsize 500M;
+
+-- 기존 T/S에 Datafile 추가
+ALTER tablespace inventory
+ADD datafile '/u01/app/oracle/oradata/ORCL/datafile/inventory02.dbf' SIZE 50M;
+
+-- 기존 T/S에 Datafile 변경
+ALTER DATABASE datafile '/u01/app/oracle/oradata/ORCL/datafile/inventory01.dbf'
+resize 200M;
+
+-- Datafile에 autoextend 기능 설정
+
+-- T/S 생성 시
+CREATE tablespace inventory
+datafile '/u01/app/oracle/oradata/ORCL/datafile/inventory01.dbf' SIZE 100M
+autoextend ON NEXT 10M maxsize 500M;
+
+-- T/S 생성 후
+ALTER DATABASE datafile '/u01/app/oracle/oradata/ORCL/datafile/inventory02.dbf'
+autoextend ON NEXT 20M;
+
+-- T/S 삭제
+DROP tablespace appuser
+INCLUDING CONTENTS  AND datafiles
+CASCADE CONSTRAINTS;
+
+-- user 생성
+CREATE  USER demo
+IDENTIFIED BY DEMO ;
+
+-- system권한 부여
+GRANT CREATE SESSION, CREATE TABLE, CREATE SEQUENCE, CREATE VIEW
+TO demo;
+
+-- system 권한회수
+REVOKE CREATE TABLE
+FROM demo;
+
+-- object 권한 부여
+conn demo2/demo2
+
+SELECT employee_id, last_name, salary
+FROM hr.employees;
+
+conn hr/hr
+GRANT SELECT
+ON employees
+TO demo;
+
+conn demo/demo
+SELECT employee_id, last_name, salary
+FROM hr.employees;
+
+-- object 권환 회수
+conn hr/hr
+REVOKE SELECT 
+ON employees
+FROM demo;
+
+-- 정리 및 실습
+-- 사용자 생성
+ conn sys/oracle AS sysdba
+ 
+ CREATE USER turner IDENTIFIED BY lover;
+CREATE USER FOR IDENTIFIED BY henry;
+GRANT CREATE SESSION, unlimited tablespace 
+TO turner, ford;
+
+-- 시스템 권한 회수 시 cascade 효과(with admin option)
+conn sys/oracle AS sysdba
+GRANT CREATE TABLE
+TO turner
+WITH admin OPTION;
+
+conn turner/lover
+CREATE TABLE turner_table (my_column NUMBER(20));
+GRANT CREATE TABLE
+TO ford;
+
+conn ford/henry
+crate TABLE ford_table(my_column NUMBER(20));
+
+conn sys/oracle AS sysdba
+REVOKE CREATE TABLE
+FROM turner;
+conn ford/henry
+CREATE TABLE my_TABLE_2 (my_column NUMBER(20));
