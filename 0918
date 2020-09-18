@@ -1,0 +1,34 @@
+conn hr/hr
+
+GRANT SELECT 
+ON employees
+TO turner
+WITH GRANT OPTION ;
+
+conn turner/lover
+
+SELECT last_name, job_id
+FROM hr.EMPLOYEES 
+WHERE hr.employee_id = 103;
+
+GRANT SELECT 
+ON hr.EMPLOYEES 
+TO ford;
+
+conn ford/henry
+
+SELECT last_name, job_id
+FROM hr.employees
+WHERE employee_id = 103;
+
+conn hr/hr
+
+REVOKE SELECT 
+ON employees
+FROM turner;
+
+conn ford/henry
+
+SELECT last_name, job_id
+FROM hr.EMPLOYEES
+WHERE EMPLOYEE_ID = 103;
